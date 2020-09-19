@@ -1,16 +1,5 @@
-# women_safety
+HackChennai---Women-Safety
 
-A new Flutter project.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+App designed for women safety if any mishap occurs. The person in trouble can give a quick call out to the nearby people with the same application to see the location of person in the trouble with a short message.
