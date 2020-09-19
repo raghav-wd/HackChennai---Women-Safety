@@ -7,13 +7,31 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:women_safety/signup.dart';
 
 import 'login.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  
+  
+
+  @override
+  void initState() { 
+    super.initState();
+
+    
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -142,6 +160,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [IconButton(icon: Icon(Icons.phone_locked,), onPressed: ()async{
+          var pref = await SharedPreferences.getInstance();
+          pref.clear();
+          Navigator.of(context).pushReplacementNamed("/login");
+        },),
+        
+        ],
         title: Text(widget.title,style: GoogleFonts.roboto(color: Colors.white,fontSize: 24,fontWeight: FontWeight.w400)),
         centerTitle: true,
         

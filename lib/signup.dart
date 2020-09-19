@@ -72,7 +72,7 @@ class _SignUpState extends State<SignUp> {
           child: new Column(
         children: <Widget>[
 
-         Image.asset('assets/login.gif'),
+         Image.asset('assets/signup.gif'),
 
           
          SizedBox(height: 20,),

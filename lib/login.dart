@@ -4,6 +4,7 @@ import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class Login extends StatefulWidget{
@@ -15,6 +16,29 @@ class Login extends StatefulWidget{
 }
 
 class _LoginState extends State<Login> {
+  
+  bool a=false;
+
+  @override
+  void initState() { 
+    super.initState();
+    pref();
+    
+  }
+
+  
+   pref() async{
+    var pref =await SharedPreferences.getInstance();
+     a = pref.getBool("login");
+
+     if(a){
+       Navigator.of(context).pushReplacementNamed("/home");
+     }
+     setState(() {
+       
+     });
+
+   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
    
@@ -346,16 +370,22 @@ class _LoginState extends State<Login> {
 
         
 
-      if(data['uid']!="-1") {
+      if(data['uid']!="-1")  {
         print(data);
 
+
+        String uid = data['uid'];
+
+        var pref = await SharedPreferences.getInstance();
         
+        pref.setBool("login", true);
+        pref.setString("uid",uid );
 
        
         print("success");
 
 
-        Navigator.of(context).pushNamed('/home');
+        Navigator.of(context).popAndPushNamed('/home');
 
        
 
