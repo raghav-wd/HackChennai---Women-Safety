@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() => runApp(MyApp());
 
@@ -13,6 +16,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Feel Safe',
+      
+
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -30,6 +35,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String _mapStyle;
+
+  @override
+  void initState() { 
+    super.initState();
+
+    rootBundle.loadString('assets/map.txt').then((string) {
+    _mapStyle = string;
+  });
+  }
+
   StreamSubscription _locationSubscription;
   Location _locationTracker = Location();
   Marker marker;
@@ -62,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
           circleId: CircleId("car"),
           radius: newLocalData.accuracy,
           zIndex: 1,
+          strokeWidth: 2,
           strokeColor: Colors.blue,
           center: latlng,
           fillColor: Colors.blue.withAlpha(70));
@@ -87,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
               bearing: 192.8334901395799,
               target: LatLng(newLocalData.latitude, newLocalData.longitude),
               tilt: 0,
-              zoom: 18.00)));
+              zoom: 16.80)));
           updateMarkerAndCircle(newLocalData, imageData);
         }
       });
@@ -111,17 +128,52 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title,style: GoogleFonts.roboto(color: Colors.white,fontSize: 24,fontWeight: FontWeight.w400)),
+        centerTitle: true,
+        
+        backgroundColor: Color.fromRGBO(0, 48, 153, 0.7),
+        elevation: 0,
       ),
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        initialCameraPosition: initialLocation,
-        markers: Set.of((marker != null) ? [marker] : []),
-        circles: Set.of((circle != null) ? [circle] : []),
-        onMapCreated: (GoogleMapController controller) {
-          _controller = controller;
-        },
+      body: SafeArea(
+              child: Container(
+          child: Stack(
+                    children:<Widget>[
+                     
+                      
 
+                      
+                       GoogleMap(
+              mapType: MapType.normal,
+              initialCameraPosition: initialLocation,
+              markers: Set.of((marker != null) ? [marker] : []),
+              circles: Set.of((circle != null) ? [circle] : []),
+              onMapCreated: (GoogleMapController controller) {
+                _controller = controller;
+                _controller.setMapStyle(_mapStyle);
+                
+              },
+
+            ),
+            
+             Positioned(
+                        bottom: 14,
+                        left: 15,
+                        child: Container(
+                          height: 50,
+                          padding: EdgeInsets.all(10),
+                          child: Row(children:<Widget>[ Icon(Icons.add_alert, color: Colors.white,), Text("Need Assistance",style: GoogleFonts.manrope(color: Colors.white,fontWeight: FontWeight.w300,fontSize: 14),)]),
+                         
+                          decoration: BoxDecoration(
+                             color: Colors.red,
+                            borderRadius: BorderRadius.all(Radius.circular(14))
+                          ),
+                        ),
+                        ),
+                      
+            
+            ]
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
           child: Icon(Icons.location_searching),
