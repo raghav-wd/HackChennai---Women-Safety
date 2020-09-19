@@ -30,6 +30,9 @@ dependencies:
   google_maps_flutter: ^0.5.32
   location: ^3.0.2
   google_fonts: ^1.1.0
+  argon_buttons_flutter: ^1.0.6
+  flutter_spinkit: ^4.1.2+1
+  http: ^0.12.2
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +50,7 @@ flutter:
   assets:
     - assets/car_icon.png
     - assets/map.txt
+    - login.gif
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -71,3 +75,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+

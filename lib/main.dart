@@ -7,6 +7,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:women_safety/signup.dart';
+
+import 'login.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,6 +17,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
+      routes: {
+
+        '/login': (context)=>Login(),
+        '/home': (context)=>MyHomePage(title: 'Feel Safe'),
+        '/signup':(context)=>SignUp(),
+      },
+
+
+
+
       debugShowCheckedModeBanner: false,
       title: 'Feel Safe',
       
@@ -21,7 +35,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Feel Safe'),
+      home: Login(),
     );
   }
 }
@@ -131,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title,style: GoogleFonts.roboto(color: Colors.white,fontSize: 24,fontWeight: FontWeight.w400)),
         centerTitle: true,
         
-        backgroundColor: Color.fromRGBO(0, 48, 153, 0.7),
+        backgroundColor: Color.fromRGBO(0, 60, 153, 0.7),
         elevation: 0,
       ),
       body: SafeArea(
@@ -143,6 +157,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
                       
                        GoogleMap(
+                         zoomControlsEnabled: false,
+                         zoomGesturesEnabled: true,
               mapType: MapType.normal,
               initialCameraPosition: initialLocation,
               markers: Set.of((marker != null) ? [marker] : []),
@@ -151,6 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 _controller = controller;
                 _controller.setMapStyle(_mapStyle);
                 
+                
               },
 
             ),
@@ -158,14 +175,19 @@ class _MyHomePageState extends State<MyHomePage> {
              Positioned(
                         bottom: 14,
                         left: 15,
-                        child: Container(
-                          height: 50,
-                          padding: EdgeInsets.all(10),
-                          child: Row(children:<Widget>[ Icon(Icons.add_alert, color: Colors.white,), Text("Need Assistance",style: GoogleFonts.manrope(color: Colors.white,fontWeight: FontWeight.w300,fontSize: 14),)]),
-                         
-                          decoration: BoxDecoration(
-                             color: Colors.red,
-                            borderRadius: BorderRadius.all(Radius.circular(14))
+                        child: GestureDetector(
+                          onTap: (){
+                            _settingModalBottomSheet(context);
+                          },
+                                                  child: Container(
+                            height: 50,
+                            padding: EdgeInsets.all(10),
+                            child: Row(children:<Widget>[ Icon(Icons.add_alert, color: Colors.white,), Text("Need Assistance",style: GoogleFonts.manrope(color: Colors.white,fontWeight: FontWeight.w300,fontSize: 14),)]),
+                           
+                            decoration: BoxDecoration(
+                               color: Colors.red,
+                              borderRadius: BorderRadius.all(Radius.circular(14))
+                            ),
                           ),
                         ),
                         ),
@@ -182,4 +204,35 @@ class _MyHomePageState extends State<MyHomePage> {
           }),
     );
   }
+
+
+  void _settingModalBottomSheet(context){
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc){
+          return Container(
+            child: new Wrap(
+            children: <Widget>[
+new ListTile(
+            leading: new Icon(Icons.music_note),
+            title: new Text('Music'),
+            onTap: () => {}          
+          ),
+          new ListTile(
+            leading: new Icon(Icons.videocam),
+            title: new Text('Video'),
+            onTap: () => {},          
+          ),
+            ],
+          ),
+          );
+      }
+    );
+    
+    }
+
+
+
+
+
 }
