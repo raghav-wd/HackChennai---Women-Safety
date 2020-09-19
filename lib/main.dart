@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +9,9 @@ import 'package:location/location.dart';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:women_safety/searchpeopleModel.dart';
 import 'package:women_safety/signup.dart';
+import 'package:http/http.dart' as http;
 
 import 'login.dart';
 
@@ -61,17 +64,31 @@ class _MyAppState extends State<MyApp> {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
+ 
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  List<FIndPeople> findpeople = [];
+   List<Marker> marker69 = [];
+   BitmapDescriptor pinLocationIcon;
+
+  var lat=0.0;
+  var longi= 0.0;
+
   String _mapStyle;
 
   @override
   void initState() { 
     super.initState();
+     BitmapDescriptor.fromAssetImage(
+         ImageConfiguration(devicePixelRatio: 2.5),
+         'assets/marker.png').then((onValue) {
+            pinLocationIcon = onValue;
+         });
 
     rootBundle.loadString('assets/map.txt').then((string) {
     _mapStyle = string;
@@ -85,14 +102,20 @@ class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController _controller;
 
   static final CameraPosition initialLocation = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
+    target: LatLng(26.895144,80.961115),
     zoom: 14.4746,
   );
 
   Future<Uint8List> getMarker() async {
-    ByteData byteData = await DefaultAssetBundle.of(context).load("assets/car_icon.png");
+    ByteData byteData = await DefaultAssetBundle.of(context).load("assets/alert.png");
     return byteData.buffer.asUint8List();
   }
+
+  Future<Uint8List> getMarker1() async {
+    ByteData byteData = await DefaultAssetBundle.of(context).load("assets/mylocation.jpg");
+    return byteData.buffer.asUint8List();
+  }
+  
 
   void updateMarkerAndCircle(LocationData newLocalData, Uint8List imageData) {
     LatLng latlng = LatLng(newLocalData.latitude, newLocalData.longitude);
@@ -100,10 +123,10 @@ class _MyHomePageState extends State<MyHomePage> {
       marker = Marker(
           markerId: MarkerId("home"),
           position: latlng,
-          rotation: newLocalData.heading,
+         // rotation: newLocalData.heading,
           draggable: false,
           zIndex: 2,
-          flat: true,
+          flat: false,
           anchor: Offset(0.5, 0.5),
           icon: BitmapDescriptor.fromBytes(imageData));
       circle = Circle(
@@ -120,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void getCurrentLocation() async {
     try {
 
-      Uint8List imageData = await getMarker();
+      Uint8List imageData = await getMarker1();
       var location = await _locationTracker.getLocation();
 
       updateMarkerAndCircle(location, imageData);
@@ -138,6 +161,8 @@ class _MyHomePageState extends State<MyHomePage> {
               tilt: 0,
               zoom: 16.80)));
           updateMarkerAndCircle(newLocalData, imageData);
+          lat = newLocalData.latitude;
+          longi = newLocalData.longitude;
         }
       });
 
@@ -186,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
                          zoomGesturesEnabled: true,
               mapType: MapType.normal,
               initialCameraPosition: initialLocation,
-              markers: Set.of((marker != null) ? [marker] : []),
+              markers: Set.of((marker69 != null) ? marker69 :[]),
               circles: Set.of((circle != null) ? [circle] : []),
               onMapCreated: (GoogleMapController controller) {
                 _controller = controller;
@@ -202,6 +227,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         left: 15,
                         child: GestureDetector(
                           onTap: (){
+                            _locationSubscription.cancel();
+
                             _settingModalBottomSheet(context);
                           },
                                                   child: Container(
@@ -216,6 +243,26 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                         ),
+              
+               Positioned(
+                        bottom: 94,
+                        left: 15,
+                        child: GestureDetector(
+                          onTap: (){
+                           searchpeople();
+                          },
+                                                  child: Container(
+                            height: 50,
+                            padding: EdgeInsets.all(10),
+                            child: Row(children:<Widget>[ Icon(Icons.search, color: Colors.white,), Text("Find People",style: GoogleFonts.manrope(color: Colors.white,fontWeight: FontWeight.w300,fontSize: 14),)]),
+                           
+                            decoration: BoxDecoration(
+                               color: Colors.green,
+                              borderRadius: BorderRadius.all(Radius.circular(14))
+                            ),
+                          ),
+                        ),
+                        ),
                       
             
             ]
@@ -223,7 +270,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.location_searching),
+          child: Icon(Icons.location_on),
           onPressed: () {
             getCurrentLocation();
           }),
@@ -256,6 +303,133 @@ new ListTile(
     
     }
 
+
+
+
+  searchpeople()async {
+
+    _showMyDialog("Searching....", "searching for SOS calls");
+
+
+
+
+  }
+
+
+  send()async {
+
+    findpeople.clear();
+    marker69.clear();
+    setState(() {
+      
+    });
+
+    var pref = await SharedPreferences.getInstance();
+    var uid = pref.getString("uid");
+    var locallat = lat;
+    var locallong = longi;
+    print("lat : ${locallat} and longi: ${locallong}");
+
+    String url = "https://securityapp22.000webhostapp.com/getNearbyUsers.php";
+
+    var post = await http.post(url,
+
+      headers: <String, String>{
+         'Content-Type': 'application/json; charset=UTF-8',
+        },
+
+      
+
+
+        body: jsonEncode(<String, String>{
+          "uid": uid,
+          "lat": locallat.toString(),
+          "longi": locallong.toString(),
+          "dist":"5"
+
+        })
+
+
+    
+    ).then((http.Response res) async {
+
+      var data = json.decode(res.body);
+
+      print(data);
+
+        try{
+
+      for(var d in data){
+        FIndPeople f = FIndPeople.fromJson(d);
+        findpeople.add(f);
+      }
+
+      var len = findpeople.length;
+      print(len);
+       Uint8List imageData1 = await getMarker();
+
+      for(int i = 0; i<len;i++){
+      marker69.add(Marker(
+        markerId: MarkerId(findpeople[i].uid),
+        position: LatLng(double.parse(findpeople[i].lat),double.parse(findpeople[i].longi)),
+        icon: BitmapDescriptor.fromBytes(imageData1)
+
+      ));
+      }
+
+      setState(() {
+        // marker= marker69[0];
+        
+      });
+        }catch(ex){
+          print(ex);
+          print("nahi hua");
+
+        }
+
+    });
+
+  }
+
+
+
+
+  Future<void> _showMyDialog(String title,String content) async {
+
+    send();
+
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+
+    builder: (BuildContext context) {
+      Future.delayed(Duration(seconds: 2),(){
+        Navigator.of(context).pop();
+      });
+      return AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(
+
+          child: ListBody(
+            children: <Widget>[
+              Row(  children:<Widget>[Text(content), SizedBox(width: 10,), CircularProgressIndicator()   ]),
+              
+              //Text('Would you like to approve of this message?'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Okay'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
 
