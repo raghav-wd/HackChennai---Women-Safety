@@ -9,6 +9,7 @@ import 'package:location/location.dart';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:women_safety/NeedHelpModel.dart';
 import 'package:women_safety/searchpeopleModel.dart';
 import 'package:women_safety/signup.dart';
 import 'package:http/http.dart' as http;
@@ -73,8 +74,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   List<FIndPeople> findpeople = [];
+  int _value =3;
    List<Marker> marker69 = [];
    BitmapDescriptor pinLocationIcon;
+   List<NeedHelp> needhelppeep =[];
 
   var lat=0.0;
   var longi= 0.0;
@@ -134,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
           radius: newLocalData.accuracy,
           zIndex: 1,
           strokeWidth: 2,
-          strokeColor: Colors.blue,
+          strokeColor: Colors.green,
           center: latlng,
           fillColor: Colors.blue.withAlpha(70));
     });
@@ -282,26 +285,245 @@ class _MyHomePageState extends State<MyHomePage> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bc){
-          return Container(
-            child: new Wrap(
-            children: <Widget>[
-new ListTile(
-            leading: new Icon(Icons.music_note),
-            title: new Text('Music'),
-            onTap: () => {}          
-          ),
-          new ListTile(
-            leading: new Icon(Icons.videocam),
-            title: new Text('Video'),
-            onTap: () => {},          
-          ),
-            ],
-          ),
+          return StatefulBuilder(
+            builder: (context,setState){
+                      return Container(
+                       color: Color(0xFF7373737),
+              child: Container(
+                height: 300,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20),topRight: Radius.circular(20)),
+                  color: Colors.white
+                ),
+
+               child: Column(
+
+                  
+
+                                children:<Widget>[ 
+                                  SizedBox(height: 40,),
+                                  Text("Set The Radius For Your Alert!",style: GoogleFonts.manrope(fontSize: 24),),
+                                  
+                                  Slider(
+                            value: _value.toDouble(),
+                            min: 1.0,
+                            max: 5.0,
+                            divisions: 5,
+                            activeColor: Colors.red,
+                            inactiveColor: Colors.black,
+                            label: ' Radius :${_value}km',
+                            onChanged: (double newValue) {
+                              setState(() {
+                                _value = newValue.round();
+                              });
+
+                    
+
+                            }
+                            
+              ),
+              
+              SizedBox(height: 10,),
+
+              Text("Current Radius Range: ${_value} Km",style: GoogleFonts.roboto(fontSize: 18),),
+
+              SizedBox(height: 30,),
+
+              GestureDetector(
+                onTap: (){
+                    findhelp();
+                },
+                              child: Container(height: 60,width: MediaQuery.of(context).size.width*.80,
+                
+                decoration: BoxDecoration(
+                  color: Colors.orange[400],
+                  borderRadius: BorderRadius.all(Radius.circular(10))
+                ),
+                padding: EdgeInsets.all(15),
+                child: Text("Send Alert!",textAlign: TextAlign.center, style: GoogleFonts.manrope(fontSize: 20,color: Colors.white,fontWeight: FontWeight.w500)),
+                ),
+              )
+              
+              ]
+               )
+              
+              )
+            
+            );}
           );
       }
     );
     
     }
+
+
+    findhelp()async  {
+
+      
+     marker69.clear();
+      setState(() {
+        
+      });
+
+      print("button pressed");
+      Navigator.pop(context);
+
+      try {
+        var pref = await SharedPreferences.getInstance();
+      var uid=  pref.getString("uid");
+    var locallat = lat;
+    var locallong = longi;
+        var url ="https://securityapp22.000webhostapp.com/UpdateLocation.php";
+        var post = await http.post(url,
+        
+        headers: <String, String>{
+         'Content-Type': 'application/json; charset=UTF-8',
+        },
+
+      body: jsonEncode(<String, String>{
+        "uid": uid,
+        "lat": locallat.toString(),
+        "longi":locallong.toString()
+      })
+        
+        ).then((http.Response res) async {
+
+            var data = json.decode(res.body);
+            if(data["status"]=='x'){
+              print("ho gaya location upload");
+
+              secondneedhelp();
+
+            }else{
+              print("nahi hua error hai location upload mein");
+            }
+
+
+        });
+
+
+
+      }catch(ex){
+        print(ex);
+        print("failed to send location");
+      }
+      
+
+    }
+
+  //   creatingindex1()async{
+
+  //     try{
+
+  //         var data = { 'firstName' : 'John', 'lastName' : 'Doe' };
+  //     HttpRequest.postFormData('/send', data).then((HttpRequest resp) {
+  // // Do something with the response.
+  //       });
+
+
+  //     }catch(ex){
+  //       print(ex);
+  //       print("cant set person to -1");
+
+  //     }
+
+
+
+  //   }
+
+
+     secondneedhelp()async{
+
+       try {
+
+         var size = 0;
+         print("inside secondneedhelp");
+        var pref = await SharedPreferences.getInstance();
+      var uid=  pref.getString("uid");
+    var locallat = lat;
+    var locallong = longi;
+        var url ="https://securityapp22.000webhostapp.com/getNumberOfUsers.php";
+        var post = await http.post(url,
+        
+        headers: <String, String>{
+         'Content-Type': 'application/json; charset=UTF-8',
+        },
+
+      body: jsonEncode(<String, String>{
+        "uid": uid,
+        "lat": locallat.toString(),
+        "longi": locallong.toString(),
+        "dist":_value.toString()
+      })
+        
+        ).then((http.Response res) async {
+
+            var data = json.decode(res.body);
+            print(data);
+           try{
+              print("locattion of people");
+              needhelppeep.clear();
+
+              for(var d in data){
+                NeedHelp people = NeedHelp.fromJson(d);
+                needhelppeep.add(people);
+              }
+              size = needhelppeep.length;
+
+              _showpeepsDialog(size.toString(),"There are People around you","Alert Sent!");
+
+
+
+            }catch(ex){
+              print(ex);
+              print("koi nahi hai aas pass");
+              _showpeepsDialog(size.toString(),"There is No one around you","Alert Sent!");
+            }
+            
+
+              
+
+            
+
+
+        });
+
+
+
+      }catch(ex){
+        print(ex);
+        print("failed to send location");
+      }
+
+     }
+
+    Future<void> _showpeepsDialog(String people,String content, String title) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title:Text(title),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+             Text(content),
+             Text("NearBy People :${people}")
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
 
