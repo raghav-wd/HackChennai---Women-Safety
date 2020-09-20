@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:argon_buttons_flutter/argon_buttons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,10 +59,10 @@ class _LoginState extends State<Login> {
     return Scaffold(
 
       appBar: AppBar(
-        title: Text("Login"),
+        title: Text("Feel Safe",style: GoogleFonts.roboto(fontSize: 24, color: Colors.black),),
         elevation: 0,
         centerTitle: true,
-
+        backgroundColor: Colors.white,
 
       ),
       body: GestureDetector(
