@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -246,6 +247,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                         ),
+
+                        
               
                Positioned(
                         bottom: 94,
@@ -261,6 +264,26 @@ class _MyHomePageState extends State<MyHomePage> {
                            
                             decoration: BoxDecoration(
                                color: Colors.green,
+                              borderRadius: BorderRadius.all(Radius.circular(14))
+                            ),
+                          ),
+                        ),
+                        ),
+
+                          Positioned(
+                        bottom: 170,
+                        left: 15,
+                        child: GestureDetector(
+                          onTap: (){
+                           markassafe("Are You Sure You Want to Remove Marker", "Your location will be marked as safe!");
+                          },
+                                                  child: Container(
+                            height: 50,
+                            padding: EdgeInsets.all(10),
+                            child: Row(children:<Widget>[ Icon(Icons.warning, color: Colors.white,), Text("Mark As safe",style: GoogleFonts.manrope(color: Colors.white,fontWeight: FontWeight.w500,fontSize: 14),)]),
+                           
+                            decoration: BoxDecoration(
+                               color: Colors.orange,
                               borderRadius: BorderRadius.all(Radius.circular(14))
                             ),
                           ),
@@ -357,6 +380,9 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
 
+    
+
+
     findhelp()async  {
 
       
@@ -392,7 +418,8 @@ class _MyHomePageState extends State<MyHomePage> {
             if(data["status"]=='x'){
               print("ho gaya location upload");
 
-              secondneedhelp();
+              // 
+              addmarker();
 
             }else{
               print("nahi hua error hai location upload mein");
@@ -411,26 +438,115 @@ class _MyHomePageState extends State<MyHomePage> {
 
     }
 
-  //   creatingindex1()async{
+    clearEmergency()async{
 
-  //     try{
+          try{
 
-  //         var data = { 'firstName' : 'John', 'lastName' : 'Doe' };
-  //     HttpRequest.postFormData('/send', data).then((HttpRequest resp) {
-  // // Do something with the response.
-  //       });
-
-
-  //     }catch(ex){
-  //       print(ex);
-  //       print("cant set person to -1");
-
-  //     }
+        var pref = await SharedPreferences.getInstance();
+        var uid = pref.getString("uid");
+        var dmsg = "need help";
+        var url ="https://securityapp22.000webhostapp.com/CancelDanger.php";
 
 
+        var post = await http.post(url,
+        
+        headers: <String, String>{
+         'Content-Type': 'application/json; charset=UTF-8',
+        },
 
-  //   }
+      body: jsonEncode(<String, String>{
+        "uid": uid,
+       
+        
+      })
+        
+        
+        ).then((http.Response res) {
+            String jsonsDataString = res.body.toString();
+          var data = json.decode(jsonsDataString);
+          print(data);
 
+          if(data['status']=="x"){
+            print("marker HUT GAYA  yESSS");
+            marker69.clear();
+            
+          }
+
+          else{
+            print("failed to UNMARK marker");
+          }
+
+        });
+
+        setState(() {
+              
+            });
+
+
+
+
+    }catch(ex){
+      print(ex);
+      print("marker nahi hata");
+    }
+    
+    
+    }
+
+    addmarker()async {
+
+      try{
+
+        var pref = await SharedPreferences.getInstance();
+        var uid = pref.getString("uid");
+        var dmsg = "need help";
+        var url ="https://securityapp22.000webhostapp.com/ShowDanger.php";
+
+
+        var post = await http.post(url,
+        
+        headers: <String, String>{
+         'Content-Type': 'application/json; charset=UTF-8',
+        },
+
+      body: jsonEncode(<String, String>{
+        "uid": uid,
+       
+        "dmsg":dmsg
+      })
+        
+        
+        ).then((http.Response res) {
+
+          var data = json.decode(res.body);
+          print(data);
+
+          if(data['status']=="x"){
+            print("marker set ho gaya -1 yESSS");
+          }
+
+          else{
+            print("failed to set marker");
+          }
+
+        }
+
+        
+        );
+
+      }catch(ex){
+        print(ex);
+        print("flag 1 nahi hua");
+        
+      }
+
+      secondneedhelp();
+
+
+
+    }
+
+ 
 
      secondneedhelp()async{
 
@@ -468,7 +584,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 NeedHelp people = NeedHelp.fromJson(d);
                 needhelppeep.add(people);
               }
-              size = needhelppeep.length;
+             // size = needhelppeep.length;
+
+              List<NeedHelp> finallist = [];
+
+              for(int j =0;j<needhelppeep.length;j++){
+
+                if(double.parse(needhelppeep[j].dist)<=_value.toInt()){
+                  finallist.add(needhelppeep[j]);
+                }
+
+              }
+
+              size = finallist.length;
+
+
 
               _showpeepsDialog(size.toString(),"There are People around you","Alert Sent!");
 
@@ -625,7 +755,7 @@ class _MyHomePageState extends State<MyHomePage> {
     barrierDismissible: false, // user must tap button!
 
     builder: (BuildContext context) {
-      Future.delayed(Duration(seconds: 2),(){
+      Future.delayed(Duration(seconds: 5),(){
         Navigator.of(context).pop();
       });
       return AlertDialog(
@@ -645,6 +775,54 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text('Okay'),
             onPressed: () {
               Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
+Future<void> markassafe(String title,String content) async {
+
+    
+
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+
+    builder: (BuildContext context) {
+      Future.delayed(Duration(seconds: 2),(){
+        Navigator.of(context).pop();
+      });
+      return AlertDialog(
+        title: Text(title),
+        content: AutoSizeText(
+          content,
+          maxLines: 2,
+          maxFontSize: 15,
+          minFontSize: 10,
+
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('Okay'),
+            onPressed: () {
+              
+              Navigator.of(context).pop();
+              clearEmergency();
+              
+            },
+          ),
+          FlatButton(
+            child: Text('Cancel'),
+            onPressed: () {
+              
+              Navigator.of(context).pop();
+             
+              
             },
           ),
         ],
